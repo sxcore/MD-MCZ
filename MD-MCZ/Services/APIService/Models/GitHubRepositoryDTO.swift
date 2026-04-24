@@ -15,7 +15,4 @@ struct GitHubRepositoryDTO: Decodable, Sendable {
     let description: String?
     let stargazersCount: Int
     let forksCount: Int
-    let pushedAt: String?
-    let updatedAt: String?
-    let htmlUrl: URL?
 }
