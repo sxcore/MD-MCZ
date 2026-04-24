@@ -8,6 +8,12 @@
 import Foundation
 
 enum APIConstants {
+    static let baseURL = URL(string: "https://api.github.com")!
+
+    enum Path {
+        static let searchRepositories = "/search/repositories"
+    }
+
     enum Header {
         static let accept = "application/vnd.github+json"
         static let apiVersion = "2022-11-28"
