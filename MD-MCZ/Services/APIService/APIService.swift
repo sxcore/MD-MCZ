@@ -30,7 +30,7 @@ actor APIService: APIServicing {
     init(
         session: URLSession = .shared,
         decoder: JSONDecoder = .gitHub,
-        authToken: String? = nil
+        authToken: String? = GitHubConfig.token
     ) {
         self.session = session
         self.decoder = decoder

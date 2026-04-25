@@ -13,23 +13,7 @@ struct ContentView: View {
     @State private var logs: [String] = []
     @State private var repositories: [GitHubRepositoryDTO] = []
 
-    private let token: String? = {
-        if
-            let raw = Bundle.main.object(forInfoDictionaryKey: "GITHUB_TOKEN") as? String,
-            raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
-        {
-            return raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-
-        if
-            let raw = ProcessInfo.processInfo.environment["GITHUB_TOKEN"],
-            raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
-        {
-            return raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-
-        return nil
-    }()
+    private let token: String? = GitHubConfig.token
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -39,6 +23,9 @@ struct ContentView: View {
             Text(authLabel)
                 .font(.subheadline)
                 .foregroundStyle(token == nil ? .red : .green)
+            Text(GitHubConfig.diagnostics)
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
             HStack {
                 TextField("Repository search query", text: $query)
@@ -85,6 +72,7 @@ struct ContentView: View {
         .padding()
         .task {
             appendLog("Screen loaded")
+            appendLog(GitHubConfig.diagnostics)
             appendLog(authLabel)
         }
     }
