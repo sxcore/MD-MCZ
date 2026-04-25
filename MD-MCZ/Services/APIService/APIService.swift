@@ -56,8 +56,7 @@ actor APIService: APIServicing {
             page: page
         )
 
-        let url = try buildURL(for: endpoint)
-        let request = makeURLRequest(for: endpoint, url: url)
+        let request = makeURLRequest(for: endpoint)
         let (data, http) = try await data(for: request)
         return try decodeSuccessfulResponse(
             GitHubSearchResponseDTO<GitHubRepositoryDTO>.self,
@@ -66,16 +65,8 @@ actor APIService: APIServicing {
         )
     }
 
-    private func buildURL(for endpoint: APIEndpoint) throws -> URL {
-        do {
-            return try endpoint.url()
-        } catch let error as APIEndpointError {
-            throw APIError.endpoint(underlying: error)
-        }
-    }
-
-    private func makeURLRequest(for endpoint: APIEndpoint, url: URL) -> URLRequest {
-        var request = URLRequest(url: url)
+    private func makeURLRequest(for endpoint: APIEndpoint) -> URLRequest {
+        var request = URLRequest(url: endpoint.url)
         request.httpMethod = endpoint.method.rawValue
         request.setValue(APIConstants.Header.accept, forHTTPHeaderField: "Accept")
         request.setValue(APIConstants.Header.apiVersion, forHTTPHeaderField: "X-GitHub-Api-Version")

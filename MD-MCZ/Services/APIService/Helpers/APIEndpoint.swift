@@ -17,17 +17,10 @@ enum APIEndpoint: Sendable {
         }
     }
 
-    func url() throws -> URL {
-        var components = URLComponents()
-        components.scheme = APIConstants.baseURL.scheme
-        components.host = APIConstants.baseURL.host
-        components.path = path
-        components.queryItems = queryItems
-
-        guard let url = components.url else {
-            throw APIEndpointError.invalidURL(path: path, queryItems: queryItems)
-        }
-        return url
+    var url: URL {
+        APIConstants.baseURL
+            .appending(path: path)
+            .appending(queryItems: queryItems)
     }
 
     private var path: String {
