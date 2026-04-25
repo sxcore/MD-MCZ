@@ -23,9 +23,6 @@ struct ContentView: View {
             Text(authLabel)
                 .font(.subheadline)
                 .foregroundStyle(token == nil ? .red : .green)
-            Text(GitHubConfig.diagnostics)
-                .font(.caption)
-                .foregroundStyle(.secondary)
 
             HStack {
                 TextField("Repository search query", text: $query)
@@ -72,7 +69,6 @@ struct ContentView: View {
         .padding()
         .task {
             appendLog("Screen loaded")
-            appendLog(GitHubConfig.diagnostics)
             appendLog(authLabel)
         }
     }
