@@ -1,5 +1,5 @@
 //
-//  MockService.swift
+//  MockFactory.swift
 //  MD-MCZTests
 //
 //  Created by Michael Czerniakowski on 26/04/2026.
@@ -8,14 +8,31 @@
 import Foundation
 @testable import MD_MCZ
 
-final class MockFactory: APIServicing, @unchecked Sendable {
-    private(set) var callCount = 0
-    private(set) var lastQuery: String?
+actor MockFactory: APIServicing {
+    struct Snapshot: Sendable {
+        let callCount: Int
+        let lastQuery: String?
+    }
 
-    var result: Result<GitHubSearchResponseDTO<GitHubRepositoryDTO>, Error> =
+    private var callCount = 0
+    private var lastQuery: String?
+
+    private var result: Result<GitHubSearchResponseDTO<GitHubRepositoryDTO>, Error> =
         .success(GitHubSearchResponseDTO(totalCount: 0, incompleteResults: false, items: []))
-    var usersResult: Result<GitHubSearchResponseDTO<GitHubUserDTO>, Error> =
+    private var usersResult: Result<GitHubSearchResponseDTO<GitHubUserDTO>, Error> =
         .success(GitHubSearchResponseDTO(totalCount: 0, incompleteResults: false, items: []))
+
+    func setRepositoriesResult(_ newValue: Result<GitHubSearchResponseDTO<GitHubRepositoryDTO>, Error>) {
+        result = newValue
+    }
+
+    func setUsersResult(_ newValue: Result<GitHubSearchResponseDTO<GitHubUserDTO>, Error>) {
+        usersResult = newValue
+    }
+
+    func snapshot() -> Snapshot {
+        Snapshot(callCount: callCount, lastQuery: lastQuery)
+    }
 
     func searchRepositories(
         query: String,
