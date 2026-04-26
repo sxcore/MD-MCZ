@@ -15,15 +15,9 @@ enum APIError: Error, Sendable {
 }
 
 protocol APIServicing: Sendable {
-    func searchRepositories(
-        query: String,
-        page: Int
-    ) async throws -> GitHubSearchResponseDTO<GitHubRepositoryDTO>
-
-    func searchUsers(
-        query: String,
-        page: Int
-    ) async throws -> GitHubSearchResponseDTO<GitHubUserDTO>
+    func searchRepositories(query: String, page: Int) async throws -> GitHubSearchResponseDTO<GitHubRepositoryDTO>
+    func searchUsers(query: String, page: Int) async throws -> GitHubSearchResponseDTO<GitHubUserDTO>
+    func searchAutocomplete(query: String) async throws -> [SearchItem]
 }
 
 actor APIService: APIServicing {
@@ -131,5 +125,24 @@ actor APIService: APIServicing {
         } catch {
             throw APIError.decoding(underlying: error)
         }
+    }
+    
+}
+
+extension APIServicing {
+    func searchAutocomplete(query: String) async throws -> [SearchItem] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= APIConstants.Search.minimumQueryLength else {
+            return []
+        }
+
+        async let usersResponse = searchUsers(query: trimmed, page: 1)
+        async let reposResponse = searchRepositories(query: trimmed, page: 1)
+
+        let users = try await usersResponse.items.map(SearchItem.user)
+        let repos = try await reposResponse.items.map(SearchItem.repository)
+
+        let combined = (users + repos).sorted { $0.sortKey < $1.sortKey }
+        return Array(combined.prefix(APIConstants.Search.combinedResultLimit))
     }
 }

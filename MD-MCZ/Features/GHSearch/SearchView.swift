@@ -18,6 +18,8 @@ struct SearchView: View {
         NavigationStack {
             content
                 .searchable(text: $viewModel.searchText, prompt: "Search GitHub repositories")
+                .autocorrectionDisabled(true)
+                .textInputAutocapitalization(.never)
                 .navigationTitle("Search")
         }
     }

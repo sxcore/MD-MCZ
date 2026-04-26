@@ -26,5 +26,6 @@ enum APIConstants {
         static let usersPerPage = 50
         static let repositoriesPerPage = 50
         static let debounceMilliseconds = 300
+        static let combinedResultLimit = 50
     }
 }
