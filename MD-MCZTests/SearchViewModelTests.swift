@@ -14,18 +14,19 @@ final class SearchViewModelTests: XCTestCase {
     private static let pastDebounce: Duration = .milliseconds(APIConstants.Search.debounceMilliseconds + 200)
 
     func test_shortQuery_doesNotCallAPI_andStaysIdle() async {
-        let mock = MockService()
+        let mock = MockFactory()
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "ab"
         try? await Task.sleep(for: Self.pastDebounce)
 
-        XCTAssertEqual(mock.callCount, 0)
+        let snapshot = await mock.snapshot()
+        XCTAssertEqual(snapshot.callCount, 0)
         XCTAssertEqual(viewModel.state, .idle)
     }
 
     func test_rapidInput_collapsesToOneCall_withFinalQuery() async {
-        let mock = MockService()
+        let mock = MockFactory()
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "te"
@@ -34,14 +35,17 @@ final class SearchViewModelTests: XCTestCase {
         viewModel.searchText = "tests"
         try? await Task.sleep(for: Self.pastDebounce)
 
-        XCTAssertEqual(mock.callCount, 1)
-        XCTAssertEqual(mock.lastQuery, "tests")
+        let snapshot = await mock.snapshot()
+        XCTAssertEqual(snapshot.callCount, 2)
+        XCTAssertEqual(snapshot.lastQuery, "tests")
     }
 
     func test_successfulNonEmptyResponse_setsResultsState() async {
-        let mock = MockService()
-        let item = makeRepository(id: 1, name: "swift", login: "apple")
-        mock.result = .success(makeResponse(items: [item]))
+        let mock = MockFactory()
+        let repo = makeRepository(id: 1, name: "swift", login: "apple")
+        let user = makeUser(id: 2, login: "adam")
+        await mock.setRepositoriesResult(.success(makeRepoResponse(items: [repo])))
+        await mock.setUsersResult(.success(makeUserResponse(items: [user])))
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "swift"
@@ -50,12 +54,14 @@ final class SearchViewModelTests: XCTestCase {
         guard case let .results(items) = viewModel.state else {
             return XCTFail("Expected .results, got \(viewModel.state)")
         }
-        XCTAssertEqual(items.map(\.id), [1])
+        XCTAssertEqual(items.count, 2)
+        XCTAssertEqual(items.map(\.sortKey), ["adam", "swift"])
     }
 
     func test_emptyResponse_setsEmptyState() async {
-        let mock = MockService()
-        mock.result = .success(makeResponse(items: []))
+        let mock = MockFactory()
+        await mock.setRepositoriesResult(.success(makeRepoResponse(items: [])))
+        await mock.setUsersResult(.success(makeUserResponse(items: [])))
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "rare-query"
@@ -65,8 +71,8 @@ final class SearchViewModelTests: XCTestCase {
     }
 
     func test_serviceError_setsErrorStateWithNonEmptyMessage() async {
-        let mock = MockService()
-        mock.result = .failure(APIError.httpStatus(code: 403, data: Data()))
+        let mock = MockFactory()
+        await mock.setUsersResult(.failure(APIError.httpStatus(code: 403, data: Data())))
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "anything"
@@ -79,27 +85,47 @@ final class SearchViewModelTests: XCTestCase {
     }
 
     func test_supersededByShortQuery_doesNotEnterErrorState() async {
-        let mock = MockService()
-        mock.result = .failure(APIError.httpStatus(code: 500, data: Data()))
+        let mock = MockFactory()
+        await mock.setRepositoriesResult(.failure(APIError.httpStatus(code: 500, data: Data())))
+        await mock.setUsersResult(.failure(APIError.httpStatus(code: 500, data: Data())))
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "first"
         viewModel.searchText = "ab"
         try? await Task.sleep(for: Self.pastDebounce)
 
-        XCTAssertEqual(mock.callCount, 0)
+        let snapshot = await mock.snapshot()
+        XCTAssertEqual(snapshot.callCount, 0)
         XCTAssertEqual(viewModel.state, .idle)
     }
 
     // MARK: - Builders
 
-    private func makeResponse(
+    private func makeRepoResponse(
         items: [GitHubRepositoryDTO]
     ) -> GitHubSearchResponseDTO<GitHubRepositoryDTO> {
         GitHubSearchResponseDTO(
             totalCount: items.count,
             incompleteResults: false,
             items: items
+        )
+    }
+
+    private func makeUserResponse(
+        items: [GitHubUserDTO]
+    ) -> GitHubSearchResponseDTO<GitHubUserDTO> {
+        GitHubSearchResponseDTO(
+            totalCount: items.count,
+            incompleteResults: false,
+            items: items
+        )
+    }
+
+    private func makeUser(id: Int, login: String) -> GitHubUserDTO {
+        GitHubUserDTO(
+            id: id,
+            login: login,
+            avatarUrl: nil
         )
     }
 
@@ -115,33 +141,3 @@ final class SearchViewModelTests: XCTestCase {
         )
     }
 }
-
-// MARK: - Mock
-
-private final class MockService: APIServicing, @unchecked Sendable {
-    private(set) var callCount = 0
-    private(set) var lastQuery: String?
-    var result: Result<GitHubSearchResponseDTO<GitHubRepositoryDTO>, Error> =
-        .success(GitHubSearchResponseDTO(totalCount: 0, incompleteResults: false, items: []))
-    var usersResult: Result<GitHubSearchResponseDTO<GitHubUserDTO>, Error> =
-        .success(GitHubSearchResponseDTO(totalCount: 0, incompleteResults: false, items: []))
-
-    func searchRepositories(
-        query: String,
-        page: Int
-    ) async throws -> GitHubSearchResponseDTO<GitHubRepositoryDTO> {
-        callCount += 1
-        lastQuery = query
-        return try result.get()
-    }
-
-    func searchUsers(
-        query: String,
-        page: Int
-    ) async throws -> GitHubSearchResponseDTO<GitHubUserDTO> {
-        callCount += 1
-        lastQuery = query
-        return try usersResult.get()
-    }
-}
-
