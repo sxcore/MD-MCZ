@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GitHubRepositoryDTO: Decodable, Sendable, Equatable {
+struct GitHubRepositoryDTO: Decodable, Sendable, Equatable, Identifiable {
     let id: Int
     let name: String
     let fullName: String
