@@ -17,7 +17,7 @@ struct SearchView: View {
     var body: some View {
         NavigationStack {
             content
-                .searchable(text: $viewModel.searchText, prompt: "Search GitHub repositories")
+                .searchable(text: $viewModel.searchText, prompt: "Search GitHub users and repositories")
                 .autocorrectionDisabled(true)
                 .textInputAutocapitalization(.never)
                 .navigationTitle("Search")
@@ -37,9 +37,9 @@ struct SearchView: View {
             ProgressView()
         case .empty:
             ContentUnavailableView.search
-        case .results(let repos):
-            List(repos) { repo in
-                RepositoryRow(repo: repo)
+        case .results(let items):
+            List(items) { item in
+                SearchItemRow(item: item)
             }
         case .error(let message):
             ContentUnavailableView(
@@ -51,24 +51,36 @@ struct SearchView: View {
     }
 }
 
-private struct RepositoryRow: View {
-    let repo: GitHubRepositoryDTO
+private struct SearchItemRow: View {
+    let item: SearchItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(repo.name)
-                .font(.headline)
-            Text(repo.fullName)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            if let description = repo.description, description.isEmpty == false {
-                Text(description)
-                    .font(.caption)
+        switch item {
+        case .user(let user):
+            VStack(alignment: .leading, spacing: 2) {
+                Text(user.login)
+                    .font(.headline)
+                Text("User")
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .lineLimit(2)
             }
+            .padding(.vertical, 2)
+        case .repository(let repo):
+            VStack(alignment: .leading, spacing: 2) {
+                Text(repo.name)
+                    .font(.headline)
+                Text(repo.fullName)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                if let description = repo.description, description.isEmpty == false {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
+            .padding(.vertical, 2)
         }
-        .padding(.vertical, 2)
     }
 }
 
