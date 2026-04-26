@@ -15,7 +15,7 @@ final class SearchViewModel: ObservableObject {
         case idle
         case loading
         case empty
-        case results([GitHubRepositoryDTO])
+        case results([SearchItem])
         case error(String)
     }
 
@@ -41,9 +41,9 @@ final class SearchViewModel: ObservableObject {
             guard !Task.isCancelled else { return }
             state = .loading
             do {
-                let response = try await service.searchRepositories(query: trimmed, page: 1)
+                let items = try await service.searchAutocomplete(query: trimmed)
                 guard !Task.isCancelled else { return }
-                state = response.items.isEmpty ? .empty : .results(response.items)
+                state = items.isEmpty ? .empty : .results(items)
             } catch is CancellationError {
                 // TODO: add error handling
             } catch {
