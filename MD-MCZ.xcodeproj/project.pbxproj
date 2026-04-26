@@ -27,8 +27,6 @@
 		BAC81BDD2F9A8EDF00749C05 /* MD-MCZ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MD-MCZ.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAC81BEA2F9A8EE000749C05 /* MD-MCZTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "MD-MCZTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAC81BF42F9A8EE000749C05 /* MD-MCZUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "MD-MCZUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		BAD0C0DE2FA0000100749C05 /* Info-GithubAdditions.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-GithubAdditions.plist"; sourceTree = "<group>"; };
-		BAD0C0DE2FA0000200749C05 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -77,7 +75,6 @@
 		BAC81BD42F9A8EDF00749C05 = {
 			isa = PBXGroup;
 			children = (
-				BAD0C0DE2FA0000300749C05 /* MD-MCZ/Config */,
 				BAC81BDF2F9A8EDF00749C05 /* MD-MCZ */,
 				BAC81BED2F9A8EE000749C05 /* MD-MCZTests */,
 				BAC81BF72F9A8EE000749C05 /* MD-MCZUITests */,
@@ -93,15 +90,6 @@
 				BAC81BF42F9A8EE000749C05 /* MD-MCZUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		BAD0C0DE2FA0000300749C05 /* MD-MCZ/Config */ = {
-			isa = PBXGroup;
-			children = (
-				BAD0C0DE2FA0000100749C05 /* Info-GithubAdditions.plist */,
-				BAD0C0DE2FA0000200749C05 /* Secrets.xcconfig */,
-			);
-			path = "MD-MCZ/Config";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -399,7 +387,6 @@
 		};
 		BAC81BFF2F9A8EE000749C05 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BAD0C0DE2FA0000200749C05 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -411,7 +398,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "MD-MCZ/Config/Info-GithubAdditions.plist";
+				INFOPLIST_FILE = "Config/Info-GithubAdditions.plist";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -444,7 +431,6 @@
 		};
 		BAC81C002F9A8EE000749C05 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BAD0C0DE2FA0000200749C05 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -456,7 +442,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "MD-MCZ/Config/Info-GithubAdditions.plist";
+				INFOPLIST_FILE = "Config/Info-GithubAdditions.plist";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
