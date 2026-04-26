@@ -11,7 +11,7 @@ import SwiftUI
 struct MD_MCZApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SearchView()
         }
     }
 }
