@@ -10,22 +10,20 @@ import XCTest
 
 final class SearchAutocompleteTests: XCTestCase {
 
-    // MARK: - Spec coverage
-
     func test_searchAutocomplete_shortQuery_returnsEmpty_andDoesNotCallEndpoints() async throws {
-        let mock = MockFactory()
+        let mock = MockService()
 
         let items = try await mock.searchAutocomplete(query: "ab")
 
         XCTAssertTrue(items.isEmpty)
-        let snapshot = await mock.snapshot()
-        XCTAssertEqual(snapshot.callCount, 0)
+        XCTAssertEqual(mock.usersCallCount, 0)
+        XCTAssertEqual(mock.reposCallCount, 0)
     }
 
     func test_searchAutocomplete_mergesUsersAndRepos_andSortsAlphabeticallyCaseInsensitive() async throws {
-        let mock = MockFactory()
-        await mock.setUsersResult(.success(makeUsersResponse(logins: ["bravo", "Charlie", "alpha"])))
-        await mock.setRepositoriesResult(.success(makeReposResponse(names: ["Apple", "delta", "beta"])))
+        let mock = MockService()
+        mock.usersResult = .success(makeUsersResponse(logins: ["bravo", "Charlie", "alpha"]))
+        mock.reposResult = .success(makeReposResponse(names: ["Apple", "delta", "beta"]))
 
         let items = try await mock.searchAutocomplete(query: "test")
 
@@ -36,10 +34,9 @@ final class SearchAutocompleteTests: XCTestCase {
     }
 
     func test_searchAutocomplete_capsCombinedResultsAt50() async throws {
-        let mock = MockFactory()
-        // 30 + 30 = 60; spec says cap at 50.
-        await mock.setUsersResult(.success(makeUsersResponse(logins: (0..<30).map { "user\($0)" })))
-        await mock.setRepositoriesResult(.success(makeReposResponse(names: (0..<30).map { "repo\($0)" })))
+        let mock = MockService()
+        mock.usersResult = .success(makeUsersResponse(logins: (0..<30).map { "user\($0)" }))
+        mock.reposResult = .success(makeReposResponse(names: (0..<30).map { "repo\($0)" }))
 
         let items = try await mock.searchAutocomplete(query: "test")
 
@@ -47,19 +44,20 @@ final class SearchAutocompleteTests: XCTestCase {
     }
 
     func test_searchAutocomplete_callsBothEndpointsExactlyOnce() async throws {
-        let mock = MockFactory()
+        let mock = MockService()
 
         _ = try await mock.searchAutocomplete(query: "test")
 
-        let snapshot = await mock.snapshot()
-        XCTAssertEqual(snapshot.callCount, 2)
-        XCTAssertEqual(snapshot.lastQuery, "test")
+        XCTAssertEqual(mock.usersCallCount, 1)
+        XCTAssertEqual(mock.reposCallCount, 1)
+        XCTAssertEqual(mock.lastUsersQuery, "test")
+        XCTAssertEqual(mock.lastReposQuery, "test")
     }
 
     func test_searchAutocomplete_failureFromOneEndpointPropagates() async {
-        let mock = MockFactory()
-        await mock.setUsersResult(.failure(APIError.httpStatus(code: 500, data: Data())))
-        await mock.setRepositoriesResult(.success(makeReposResponse(names: ["ok"])))
+        let mock = MockService()
+        mock.usersResult = .failure(APIError.httpStatus(code: 500, data: Data()))
+        mock.reposResult = .success(makeReposResponse(names: ["ok"]))
 
         do {
             _ = try await mock.searchAutocomplete(query: "test")

@@ -11,23 +11,26 @@ import XCTest
 @MainActor
 final class SearchViewModelTests: XCTestCase {
 
-    private static let pastDebounce: Duration = .milliseconds(APIConstants.Search.debounceMilliseconds + 200)
-    private static let beforeDebounce: Duration = .milliseconds(100)
+    private static let testTimingMargin = 200
+    private static let pastDebounce: Duration =
+        .milliseconds(APIConstants.Search.debounceMilliseconds + testTimingMargin)
+    private static let beforeDebounce: Duration =
+        .milliseconds(APIConstants.Search.debounceMilliseconds / 2)
 
     func test_shortQuery_doesNotCallAPI_andStaysIdle() async {
-        let mock = MockFactory()
+        let mock = MockService()
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "ab"
         try? await Task.sleep(for: Self.pastDebounce)
 
-        let snapshot = await mock.snapshot()
-        XCTAssertEqual(snapshot.callCount, 0)
+        XCTAssertEqual(mock.usersCallCount, 0)
+        XCTAssertEqual(mock.reposCallCount, 0)
         XCTAssertEqual(viewModel.state, .idle)
     }
 
-    func test_rapidInput_collapsesToOneCall_withFinalQuery() async {
-        let mock = MockFactory()
+    func test_rapidInput_collapsesToOneAutocompleteCall_withFinalQuery() async {
+        let mock = MockService()
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "te"
@@ -36,33 +39,35 @@ final class SearchViewModelTests: XCTestCase {
         viewModel.searchText = "tests"
         try? await Task.sleep(for: Self.pastDebounce)
 
-        let snapshot = await mock.snapshot()
-        XCTAssertEqual(snapshot.callCount, 2)
-        XCTAssertEqual(snapshot.lastQuery, "tests")
+        XCTAssertEqual(mock.usersCallCount, 1)
+        XCTAssertEqual(mock.reposCallCount, 1)
+        XCTAssertEqual(mock.lastUsersQuery, "tests")
+        XCTAssertEqual(mock.lastReposQuery, "tests")
     }
 
     func test_debounce_waitsBeforeCallingService() async {
-        let mock = MockFactory()
+        let mock = MockService()
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "swift"
         try? await Task.sleep(for: Self.beforeDebounce)
 
-        let beforeSnapshot = await mock.snapshot()
-        XCTAssertEqual(beforeSnapshot.callCount, 0)
+        XCTAssertEqual(mock.usersCallCount, 0)
+        XCTAssertEqual(mock.reposCallCount, 0)
         XCTAssertEqual(viewModel.state, .idle)
 
         try? await Task.sleep(for: Self.pastDebounce)
-        let afterSnapshot = await mock.snapshot()
-        XCTAssertEqual(afterSnapshot.callCount, 2)
+
+        XCTAssertEqual(mock.usersCallCount, 1)
+        XCTAssertEqual(mock.reposCallCount, 1)
     }
 
     func test_successfulNonEmptyResponse_setsResultsState() async {
-        let mock = MockFactory()
+        let mock = MockService()
         let repo = makeRepository(id: 1, name: "swift", login: "apple")
         let user = makeUser(id: 2, login: "adam")
-        await mock.setRepositoriesResult(.success(makeRepoResponse(items: [repo])))
-        await mock.setUsersResult(.success(makeUserResponse(items: [user])))
+        mock.reposResult = .success(makeRepoResponse(items: [repo]))
+        mock.usersResult = .success(makeUserResponse(items: [user]))
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "swift"
@@ -76,9 +81,9 @@ final class SearchViewModelTests: XCTestCase {
     }
 
     func test_emptyResponse_setsEmptyState() async {
-        let mock = MockFactory()
-        await mock.setRepositoriesResult(.success(makeRepoResponse(items: [])))
-        await mock.setUsersResult(.success(makeUserResponse(items: [])))
+        let mock = MockService()
+        mock.reposResult = .success(makeRepoResponse(items: []))
+        mock.usersResult = .success(makeUserResponse(items: []))
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "rare-query"
@@ -88,8 +93,8 @@ final class SearchViewModelTests: XCTestCase {
     }
 
     func test_serviceError_setsErrorStateWithNonEmptyMessage() async {
-        let mock = MockFactory()
-        await mock.setUsersResult(.failure(APIError.httpStatus(code: 403, data: Data())))
+        let mock = MockService()
+        mock.usersResult = .failure(APIError.httpStatus(code: 403, data: Data()))
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "anything"
@@ -102,17 +107,17 @@ final class SearchViewModelTests: XCTestCase {
     }
 
     func test_supersededByShortQuery_doesNotEnterErrorState() async {
-        let mock = MockFactory()
-        await mock.setRepositoriesResult(.failure(APIError.httpStatus(code: 500, data: Data())))
-        await mock.setUsersResult(.failure(APIError.httpStatus(code: 500, data: Data())))
+        let mock = MockService()
+        mock.reposResult = .failure(APIError.httpStatus(code: 500, data: Data()))
+        mock.usersResult = .failure(APIError.httpStatus(code: 500, data: Data()))
         let viewModel = SearchViewModel(service: mock)
 
         viewModel.searchText = "first"
         viewModel.searchText = "ab"
         try? await Task.sleep(for: Self.pastDebounce)
 
-        let snapshot = await mock.snapshot()
-        XCTAssertEqual(snapshot.callCount, 0)
+        XCTAssertEqual(mock.usersCallCount, 0)
+        XCTAssertEqual(mock.reposCallCount, 0)
         XCTAssertEqual(viewModel.state, .idle)
     }
 
