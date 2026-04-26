@@ -84,6 +84,13 @@ private struct PreviewService: APIServicing {
             items: canned
         )
     }
+
+    func searchUsers(
+        query: String,
+        page: Int
+    ) async throws -> GitHubSearchResponseDTO<GitHubUserDTO> {
+        GitHubSearchResponseDTO(totalCount: 0, incompleteResults: false, items: [])
+    }
 }
 
 #Preview("Empty / typing") {

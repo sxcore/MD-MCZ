@@ -19,6 +19,11 @@ protocol APIServicing: Sendable {
         query: String,
         page: Int
     ) async throws -> GitHubSearchResponseDTO<GitHubRepositoryDTO>
+
+    func searchUsers(
+        query: String,
+        page: Int
+    ) async throws -> GitHubSearchResponseDTO<GitHubUserDTO>
 }
 
 actor APIService: APIServicing {
@@ -60,6 +65,34 @@ actor APIService: APIServicing {
         let (data, http) = try await data(for: request)
         return try decodeSuccessfulResponse(
             GitHubSearchResponseDTO<GitHubRepositoryDTO>.self,
+            data: data,
+            http: http
+        )
+    }
+
+    func searchUsers(
+        query: String,
+        page: Int = 1
+    ) async throws -> GitHubSearchResponseDTO<GitHubUserDTO> {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedQuery.count >= APIConstants.Search.minimumQueryLength else {
+            return GitHubSearchResponseDTO(
+                totalCount: 0,
+                incompleteResults: false,
+                items: []
+            )
+        }
+
+        let endpoint = APIEndpoint.searchUsers(
+            query: trimmedQuery,
+            perPage: APIConstants.Search.usersPerPage,
+            page: page
+        )
+
+        let request = makeURLRequest(for: endpoint)
+        let (data, http) = try await data(for: request)
+        return try decodeSuccessfulResponse(
+            GitHubSearchResponseDTO<GitHubUserDTO>.self,
             data: data,
             http: http
         )
