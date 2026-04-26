@@ -117,13 +117,78 @@ final class APIServiceTests: XCTestCase {
         }
     }
 
+    func testSearchUsersDoesNotCallAPIForShortQuery() async throws {
+        let apiService = await APIService(session: makeMockedSession(), decoder: .gitHub, authToken: "token")
+
+        var requestCount = 0
+        MockURLProtocol.requestHandler = { request in
+            requestCount += 1
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, Data())
+        }
+
+        let response = try await apiService.searchUsers(query: "ab", page: 1)
+        XCTAssertEqual(response.totalCount, 0)
+        XCTAssertTrue(response.items.isEmpty)
+        XCTAssertEqual(requestCount, 0)
+    }
+
+    func testSearchUsersBuildsExpectedRequestAndDecodesResponse() async throws {
+        let apiService = await APIService(session: makeMockedSession(), decoder: .gitHub, authToken: "abc123")
+
+        MockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+            let queryItems = components?.queryItems ?? []
+
+            XCTAssertEqual(components?.path, "/search/users")
+            XCTAssertEqual(queryItems.first { $0.name == "q" }?.value, "sxcore")
+            XCTAssertEqual(queryItems.first { $0.name == "per_page" }?.value, "50")
+            XCTAssertEqual(queryItems.first { $0.name == "page" }?.value, "1")
+            XCTAssertEqual(request.httpMethod, "GET")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer abc123")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "application/vnd.github+json")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "X-GitHub-Api-Version"), "2022-11-28")
+
+            let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, Data(Self.realSearchUsersPayload.utf8))
+        }
+
+        let result = try await apiService.searchUsers(query: "sxcore", page: 1)
+        XCTAssertFalse(result.incompleteResults)
+        XCTAssertEqual(result.items.count, 1)
+        XCTAssertEqual(result.items[0].id, 13_233_783)
+        XCTAssertEqual(result.items[0].login, "sxcore")
+        XCTAssertEqual(result.items[0].avatarUrl?.host, "avatars.githubusercontent.com")
+    }
+
     private func makeMockedSession() -> URLSession {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [MockURLProtocol.self]
         return URLSession(configuration: configuration)
     }
 
-    // GET /search/repositories?q=periphery&per_page=3&page=1
+    private static let realSearchUsersPayload = #"""
+    {
+      "total_count": 1,
+      "incomplete_results": false,
+      "items": [
+        {
+          "login": "sxcore",
+          "id": 13233783,
+          "node_id": "MDQ6VXNlcjEzMjMzNzgz",
+          "avatar_url": "https://avatars.githubusercontent.com/u/13233783?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/sxcore",
+          "html_url": "https://github.com/sxcore",
+          "type": "User",
+          "site_admin": false,
+          "score": 1.0
+        }
+      ]
+    }
+    """#
+
     private static let realSearchRepositoriesPayload = #"""
     {
       "total_count": 1401,

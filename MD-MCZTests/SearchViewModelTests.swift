@@ -123,6 +123,8 @@ private final class MockService: APIServicing, @unchecked Sendable {
     private(set) var lastQuery: String?
     var result: Result<GitHubSearchResponseDTO<GitHubRepositoryDTO>, Error> =
         .success(GitHubSearchResponseDTO(totalCount: 0, incompleteResults: false, items: []))
+    var usersResult: Result<GitHubSearchResponseDTO<GitHubUserDTO>, Error> =
+        .success(GitHubSearchResponseDTO(totalCount: 0, incompleteResults: false, items: []))
 
     func searchRepositories(
         query: String,
@@ -131,6 +133,15 @@ private final class MockService: APIServicing, @unchecked Sendable {
         callCount += 1
         lastQuery = query
         return try result.get()
+    }
+
+    func searchUsers(
+        query: String,
+        page: Int
+    ) async throws -> GitHubSearchResponseDTO<GitHubUserDTO> {
+        callCount += 1
+        lastQuery = query
+        return try usersResult.get()
     }
 }
 

@@ -61,6 +61,18 @@ final class GitHubDTODecodeTests: XCTestCase {
         XCTAssertEqual(response.items[0].owner.login, "peripheryapp")
     }
 
+    func testDecodeGitHubSearchUsersResponseDTO_fromRealSearchResponse() throws {
+        let data = Data(Self.realSearchUsersPayload.utf8)
+        let response = try decoder.decode(GitHubSearchResponseDTO<GitHubUserDTO>.self, from: data)
+        XCTAssertEqual(response.totalCount, 2)
+        XCTAssertFalse(response.incompleteResults)
+        XCTAssertEqual(response.items.count, 2)
+        XCTAssertEqual(response.items[0].login, "sxcore")
+        XCTAssertEqual(response.items[0].id, 13_233_783)
+        XCTAssertEqual(response.items[1].login, "jhomik")
+        XCTAssertEqual(response.items[1].avatarUrl?.host, "avatars.githubusercontent.com")
+    }
+
     private static let realUserSxcorePayload = #"""
     {
       "login": "sxcore",
@@ -152,6 +164,31 @@ final class GitHubDTODecodeTests: XCTestCase {
           "description": "Peripheral smart contracts for interacting with Uniswap v3",
           "stargazers_count": 1315,
           "forks_count": 1235
+        }
+      ]
+    }
+    """#
+
+    private static let realSearchUsersPayload = #"""
+    {
+      "total_count": 2,
+      "incomplete_results": false,
+      "items": [
+        {
+          "login": "sxcore",
+          "id": 13233783,
+          "avatar_url": "https://avatars.githubusercontent.com/u/13233783?v=4",
+          "type": "User",
+          "site_admin": false,
+          "score": 1.0
+        },
+        {
+          "login": "jhomik",
+          "id": 29075071,
+          "avatar_url": "https://avatars.githubusercontent.com/u/29075071?v=4",
+          "type": "User",
+          "site_admin": false,
+          "score": 0.9
         }
       ]
     }
