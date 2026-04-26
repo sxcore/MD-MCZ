@@ -12,6 +12,7 @@ import XCTest
 final class SearchViewModelTests: XCTestCase {
 
     private static let pastDebounce: Duration = .milliseconds(APIConstants.Search.debounceMilliseconds + 200)
+    private static let beforeDebounce: Duration = .milliseconds(100)
 
     func test_shortQuery_doesNotCallAPI_andStaysIdle() async {
         let mock = MockFactory()
@@ -38,6 +39,22 @@ final class SearchViewModelTests: XCTestCase {
         let snapshot = await mock.snapshot()
         XCTAssertEqual(snapshot.callCount, 2)
         XCTAssertEqual(snapshot.lastQuery, "tests")
+    }
+
+    func test_debounce_waitsBeforeCallingService() async {
+        let mock = MockFactory()
+        let viewModel = SearchViewModel(service: mock)
+
+        viewModel.searchText = "swift"
+        try? await Task.sleep(for: Self.beforeDebounce)
+
+        let beforeSnapshot = await mock.snapshot()
+        XCTAssertEqual(beforeSnapshot.callCount, 0)
+        XCTAssertEqual(viewModel.state, .idle)
+
+        try? await Task.sleep(for: Self.pastDebounce)
+        let afterSnapshot = await mock.snapshot()
+        XCTAssertEqual(afterSnapshot.callCount, 2)
     }
 
     func test_successfulNonEmptyResponse_setsResultsState() async {
@@ -99,6 +116,25 @@ final class SearchViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state, .idle)
     }
 
+    func test_staleRequestDoesNotOverrideLatestResults() async {
+        let service = DelayedAutocompleteService()
+        let firstItem = makeSearchRepository(id: 1, name: "first")
+        let secondItem = makeSearchRepository(id: 2, name: "second")
+        await service.setResponse(query: "first", delay: .milliseconds(1_000), items: [firstItem])
+        await service.setResponse(query: "second", delay: .zero, items: [secondItem])
+        let viewModel = SearchViewModel(service: service)
+
+        viewModel.searchText = "first"
+        try? await Task.sleep(for: Self.pastDebounce)
+        viewModel.searchText = "second"
+        try? await Task.sleep(for: Self.pastDebounce)
+
+        guard case let .results(items) = viewModel.state else {
+            return XCTFail("Expected .results, got \(viewModel.state)")
+        }
+        XCTAssertEqual(items.map(\.sortKey), ["second"])
+    }
+
     // MARK: - Builders
 
     private func makeRepoResponse(
@@ -139,5 +175,46 @@ final class SearchViewModelTests: XCTestCase {
             stargazersCount: 0,
             forksCount: 0
         )
+    }
+
+    private func makeSearchRepository(id: Int, name: String) -> SearchItem {
+        .repository(
+            GitHubRepositoryDTO(
+                id: id,
+                name: name,
+                fullName: "owner/\(name)",
+                owner: GitHubUserDTO(id: id, login: "owner", avatarUrl: nil),
+                description: nil,
+                stargazersCount: 0,
+                forksCount: 0
+            )
+        )
+    }
+}
+
+private actor DelayedAutocompleteService: APIServicing {
+    struct Plan {
+        let delay: Duration
+        let items: [SearchItem]
+    }
+
+    private var plans: [String: Plan] = [:]
+
+    func setResponse(query: String, delay: Duration, items: [SearchItem]) {
+        plans[query] = Plan(delay: delay, items: items)
+    }
+
+    func searchAutocomplete(query: String) async throws -> [SearchItem] {
+        let plan = plans[query] ?? Plan(delay: .zero, items: [])
+        try await Task.sleep(for: plan.delay)
+        return plan.items
+    }
+
+    func searchRepositories(query: String, page: Int) async throws -> GitHubSearchResponseDTO<GitHubRepositoryDTO> {
+        GitHubSearchResponseDTO(totalCount: 0, incompleteResults: false, items: [])
+    }
+
+    func searchUsers(query: String, page: Int) async throws -> GitHubSearchResponseDTO<GitHubUserDTO> {
+        GitHubSearchResponseDTO(totalCount: 0, incompleteResults: false, items: [])
     }
 }
