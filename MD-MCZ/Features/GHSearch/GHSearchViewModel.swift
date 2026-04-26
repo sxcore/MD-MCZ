@@ -11,7 +11,7 @@ internal import Combine
 @MainActor
 final class SearchViewModel: ObservableObject {
     
-    enum State: Equatable {
+    enum State {
         case idle
         case loading
         case empty
