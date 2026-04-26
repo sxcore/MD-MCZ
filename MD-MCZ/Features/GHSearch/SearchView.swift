@@ -86,16 +86,17 @@ private struct SearchItemRow: View {
 
 #if DEBUG
 private struct PreviewService: APIServicing {
-    let canned: [GitHubRepositoryDTO]
+    var cannedRepositories: [GitHubRepositoryDTO] = []
+    var cannedUsers: [GitHubUserDTO] = []
 
     func searchRepositories(
         query: String,
         page: Int
     ) async throws -> GitHubSearchResponseDTO<GitHubRepositoryDTO> {
         GitHubSearchResponseDTO(
-            totalCount: canned.count,
+            totalCount: cannedRepositories.count,
             incompleteResults: false,
-            items: canned
+            items: cannedRepositories
         )
     }
 
@@ -103,12 +104,16 @@ private struct PreviewService: APIServicing {
         query: String,
         page: Int
     ) async throws -> GitHubSearchResponseDTO<GitHubUserDTO> {
-        GitHubSearchResponseDTO(totalCount: 0, incompleteResults: false, items: [])
+        GitHubSearchResponseDTO(
+            totalCount: cannedUsers.count,
+            incompleteResults: false,
+            items: cannedUsers
+        )
     }
 }
 
 #Preview("Empty / typing") {
-    SearchView(service: PreviewService(canned: []))
+    SearchView(service: PreviewService())
 }
 
 #Preview("Results") {
@@ -121,6 +126,10 @@ private struct PreviewService: APIServicing {
         stargazersCount: 1,
         forksCount: 0
     )
-    SearchView(service: PreviewService(canned: [repo]))
+    let user = GitHubUserDTO(id: 2, login: "sxcore", avatarUrl: nil)
+    SearchView(service: PreviewService(
+        cannedRepositories: [repo],
+        cannedUsers: [user]
+    ))
 }
 #endif

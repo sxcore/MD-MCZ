@@ -39,27 +39,11 @@ actor APIService: APIServicing {
         query: String,
         page: Int = 1
     ) async throws -> GitHubSearchResponseDTO<GitHubRepositoryDTO> {
-        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedQuery.count >= APIConstants.Search.minimumQueryLength else {
-            return GitHubSearchResponseDTO(
-                totalCount: 0,
-                incompleteResults: false,
-                items: []
-            )
-        }
-
-        let endpoint = APIEndpoint.searchRepositories(
-            query: trimmedQuery,
+        try await performSearch(
+            query: query,
+            page: page,
             perPage: APIConstants.Search.repositoriesPerPage,
-            page: page
-        )
-
-        let request = makeURLRequest(for: endpoint)
-        let (data, http) = try await data(for: request)
-        return try decodeSuccessfulResponse(
-            GitHubSearchResponseDTO<GitHubRepositoryDTO>.self,
-            data: data,
-            http: http
+            endpoint: APIEndpoint.searchRepositories
         )
     }
 
@@ -67,6 +51,20 @@ actor APIService: APIServicing {
         query: String,
         page: Int = 1
     ) async throws -> GitHubSearchResponseDTO<GitHubUserDTO> {
+        try await performSearch(
+            query: query,
+            page: page,
+            perPage: APIConstants.Search.usersPerPage,
+            endpoint: APIEndpoint.searchUsers
+        )
+    }
+
+    private func performSearch<Item: Decodable>(
+        query: String,
+        page: Int,
+        perPage: Int,
+        endpoint: (_ query: String, _ perPage: Int, _ page: Int) -> APIEndpoint
+    ) async throws -> GitHubSearchResponseDTO<Item> {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedQuery.count >= APIConstants.Search.minimumQueryLength else {
             return GitHubSearchResponseDTO(
@@ -76,16 +74,10 @@ actor APIService: APIServicing {
             )
         }
 
-        let endpoint = APIEndpoint.searchUsers(
-            query: trimmedQuery,
-            perPage: APIConstants.Search.usersPerPage,
-            page: page
-        )
-
-        let request = makeURLRequest(for: endpoint)
+        let request = makeURLRequest(for: endpoint(trimmedQuery, perPage, page))
         let (data, http) = try await data(for: request)
         return try decodeSuccessfulResponse(
-            GitHubSearchResponseDTO<GitHubUserDTO>.self,
+            GitHubSearchResponseDTO<Item>.self,
             data: data,
             http: http
         )
@@ -125,7 +117,6 @@ actor APIService: APIServicing {
             throw APIError.decoding(underlying: error)
         }
     }
-    
 }
 
 extension APIServicing {

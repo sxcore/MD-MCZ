@@ -8,7 +8,12 @@
 import Foundation
 
 enum APIConstants {
-    static let baseURL = URL(string: "https://api.github.com")!
+    static let baseURL: URL = {
+        guard let url = URL(string: "https://api.github.com") else {
+            preconditionFailure("Invalid GitHub API base URL literal")
+        }
+        return url
+    }()
 
     enum Path {
         static let searchRepositories = "/search/repositories"
