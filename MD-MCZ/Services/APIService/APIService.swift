@@ -8,7 +8,6 @@
 import Foundation
 
 enum APIError: Error, Sendable {
-    case endpoint(underlying: APIEndpointError)
     case notHTTPResponse
     case httpStatus(code: Int, data: Data)
     case decoding(underlying: Error)
