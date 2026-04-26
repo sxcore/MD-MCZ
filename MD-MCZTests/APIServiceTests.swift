@@ -22,7 +22,7 @@ final class APIServiceTests: XCTestCase {
     }
 
     func testSearchRepositoriesDoesNotCallAPIForShortQuery() async throws {
-        let apiService = await APIService(session: makeMockedSession(), decoder: .gitHub, authToken: "token")
+        let apiService = APIService(session: makeMockedSession(), decoder: .gitHub, authToken: "token")
 
         var requestCount = 0
         MockURLProtocol.requestHandler = { request in
@@ -38,7 +38,7 @@ final class APIServiceTests: XCTestCase {
     }
 
     func testSearchRepositoriesBuildsExpectedRequestAndDecodesResponse() async throws {
-        let apiService = await APIService(session: makeMockedSession(), decoder: .gitHub, authToken: "abc123")
+        let apiService = APIService(session: makeMockedSession(), decoder: .gitHub, authToken: "abc123")
 
         MockURLProtocol.requestHandler = { request in
             guard let url = request.url else { throw URLError(.badURL) }
@@ -67,7 +67,7 @@ final class APIServiceTests: XCTestCase {
     }
 
     func testSearchRepositoriesDoesNotSendAuthorizationHeaderWhenTokenMissing() async throws {
-        let apiService = await APIService(session: makeMockedSession(), decoder: .gitHub, authToken: nil)
+        let apiService = APIService(session: makeMockedSession(), decoder: .gitHub, authToken: nil)
 
         MockURLProtocol.requestHandler = { request in
             XCTAssertNil(request.value(forHTTPHeaderField: "Authorization"))
@@ -79,7 +79,7 @@ final class APIServiceTests: XCTestCase {
     }
 
     func testSearchRepositoriesThrowsHTTPStatusForNonSuccess() async {
-        let apiService = await APIService(session: makeMockedSession(), decoder: .gitHub, authToken: nil)
+        let apiService = APIService(session: makeMockedSession(), decoder: .gitHub, authToken: nil)
         let responseBody = #"{"message":"forbidden"}"#
 
         MockURLProtocol.requestHandler = { request in
@@ -99,7 +99,7 @@ final class APIServiceTests: XCTestCase {
     }
 
     func testSearchRepositoriesThrowsDecodingErrorForMalformedPayload() async {
-        let apiService = await APIService(session: makeMockedSession(), decoder: .gitHub, authToken: nil)
+        let apiService = APIService(session: makeMockedSession(), decoder: .gitHub, authToken: nil)
 
         MockURLProtocol.requestHandler = { request in
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
@@ -118,7 +118,7 @@ final class APIServiceTests: XCTestCase {
     }
 
     func testSearchUsersDoesNotCallAPIForShortQuery() async throws {
-        let apiService = await APIService(session: makeMockedSession(), decoder: .gitHub, authToken: "token")
+        let apiService = APIService(session: makeMockedSession(), decoder: .gitHub, authToken: "token")
 
         var requestCount = 0
         MockURLProtocol.requestHandler = { request in
@@ -134,7 +134,7 @@ final class APIServiceTests: XCTestCase {
     }
 
     func testSearchUsersBuildsExpectedRequestAndDecodesResponse() async throws {
-        let apiService = await APIService(session: makeMockedSession(), decoder: .gitHub, authToken: "abc123")
+        let apiService = APIService(session: makeMockedSession(), decoder: .gitHub, authToken: "abc123")
 
         MockURLProtocol.requestHandler = { request in
             guard let url = request.url else { throw URLError(.badURL) }
