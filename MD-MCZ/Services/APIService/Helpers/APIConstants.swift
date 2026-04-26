@@ -12,6 +12,7 @@ enum APIConstants {
 
     enum Path {
         static let searchRepositories = "/search/repositories"
+        static let searchUsers = "/search/users"
     }
 
     enum Header {
