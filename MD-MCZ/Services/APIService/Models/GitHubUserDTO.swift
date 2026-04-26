@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GitHubUserDTO: Decodable, Sendable {
+struct GitHubUserDTO: Decodable, Sendable, Equatable {
     let id: Int
     let login: String
     let avatarUrl: URL?

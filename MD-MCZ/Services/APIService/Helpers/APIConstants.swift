@@ -24,6 +24,6 @@ enum APIConstants {
         static let minimumQueryLength = 3
         static let usersPerPage = 50
         static let repositoriesPerPage = 50
-        static let sleepTime = 300
+        static let debounceMilliseconds = 300
     }
 }
