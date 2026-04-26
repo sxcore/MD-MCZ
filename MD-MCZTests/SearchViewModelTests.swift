@@ -121,6 +121,23 @@ final class SearchViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state, .idle)
     }
 
+    func test_loadingStateIsSetWhileRequestIsInFlight() async {
+        let service = DelayedAutocompleteService()
+        let item = makeSearchRepository(id: 1, name: "swift")
+        await service.setResponse(query: "swift", delay: .milliseconds(1_000), items: [item])
+        let viewModel = SearchViewModel(service: service)
+
+        viewModel.searchText = "swift"
+        try? await Task.sleep(for: Self.pastDebounce)
+
+        XCTAssertEqual(viewModel.state, .loading)
+
+        try? await Task.sleep(for: .milliseconds(1_000))
+        guard case .results = viewModel.state else {
+            return XCTFail("Expected .results after request completes, got \(viewModel.state)")
+        }
+    }
+
     func test_staleRequestDoesNotOverrideLatestResults() async {
         let service = DelayedAutocompleteService()
         let firstItem = makeSearchRepository(id: 1, name: "first")

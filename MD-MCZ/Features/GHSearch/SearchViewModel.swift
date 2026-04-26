@@ -44,9 +44,8 @@ final class SearchViewModel: ObservableObject {
                 let items = try await service.searchAutocomplete(query: trimmed)
                 guard !Task.isCancelled else { return }
                 state = items.isEmpty ? .empty : .results(items)
-            } catch is CancellationError {
-                // TODO: add error handling
             } catch {
+                guard !Task.isCancelled else { return }
                 state = .error(error.localizedDescription)
             }
         }
