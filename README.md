@@ -7,7 +7,7 @@
 ## Setup (`GITHUB_TOKEN` via `Secrets.xcconfig`)
 
 1. Create `Config/Secrets.xcconfig` locally.
-2. Add your token (or the one I have provided with an e-mail)
+2. Add your token (or the one I provided by email).
 
 ```xcconfig
 GITHUB_TOKEN = ghp_your_token_here
@@ -34,7 +34,7 @@ xcodebuild test -project MD-MCZ.xcodeproj -scheme MD-MCZ -destination 'platform=
 - **Debounce + cancel:** the view model waits briefly before searching and cancels older tasks when the query changes.
 - **UI states:** `.idle`, `.loading`, `.empty`, `.results([SearchItem])`, `.error(String)`.
 
-## Known Limitations / Out Of Scope
+## Known Limitations / Out of Scope
 
 - No pagination UI yet (autocomplete uses the first page).
 - No dedicated rate-limit/retry UX.
@@ -42,6 +42,7 @@ xcodebuild test -project MD-MCZ.xcodeproj -scheme MD-MCZ -destination 'platform=
 - Sorting is alphabetical only (no custom ranking).
 - Token setup is local/manual (`Secrets.xcconfig` or env var).
 
-## Additional comments
+## Additional Comments
 
-- This project does now show everything I'd showcase as an engineer. With this minimal scope it tried to not overengineer the project e.g. navigation, factories.
+- I kept this intentionally simple for the scope of the task. Instead of adding extra layers (like navigation scaffolding, factories, or more abstractions), I focused on making the core flow solid: search both endpoints, merge and sort results, handle fast typing well, and keep the behavior well tested.
+- For a production workflow, I would still use atomic commits on feature branches, but I would squash them before merging to `master`. For a project this small, opening multiple PRs felt unnecessary time-wise.
