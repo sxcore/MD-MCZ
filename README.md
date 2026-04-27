@@ -2,7 +2,11 @@
 
 ## Demo Video
 
+![Demo](DEMO.gif)
+
 ## What’s Implemented
+
+- The search feature is split into a small host (`SearchScreen`) and a reusable feature view (`SearchView`): the host handles navigation/title, while the component owns search logic and rendering.
 
 ## Setup (`GITHUB_TOKEN` via `Secrets.xcconfig`)
 
