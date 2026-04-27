@@ -9,9 +9,14 @@ import SwiftUI
 
 struct SearchView: View {
     @StateObject private var viewModel: SearchViewModel
+    private let onSelect: ((SearchItem) -> Void)?
 
-    init(service: APIServicing = APIService()) {
+    init(
+        service: APIServicing = APIService(),
+        onSelect: ((SearchItem) -> Void)? = nil
+    ) {
         _viewModel = StateObject(wrappedValue: SearchViewModel(service: service))
+        self.onSelect = onSelect
     }
 
     var body: some View {
@@ -36,7 +41,16 @@ struct SearchView: View {
             ContentUnavailableView.search
         case .results(let items):
             List(items) { item in
-                SearchItemRow(item: item)
+                if let onSelect {
+                    Button {
+                        onSelect(item)
+                    } label: {
+                        SearchItemRow(item: item)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    SearchItemRow(item: item)
+                }
             }
         case .error(let message):
             ContentUnavailableView(

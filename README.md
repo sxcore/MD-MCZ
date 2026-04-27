@@ -4,22 +4,41 @@
 
 ![Demo](DEMO.gif)
 
-## What’s Implemented
 
-- The search feature is split into a small host (`SearchScreen`) and a reusable feature view (`SearchView`): the host handles navigation/title, while the component owns search logic and rendering.
+## Reusing the component
+
+`SearchView` is the reusable piece. Embed it inside any `NavigationStack`, inject your own `APIServicing`, and (optionally) handle taps:
+
+```swift
+NavigationStack {
+    SearchView(
+        service: APIService(),
+        onSelect: { item in
+            // push to detail, fill a form, etc.
+        }
+    )
+    .navigationTitle("Search")
+}
+```
+
+`SearchScreen` is the convenience full-screen variant that does the wrapping for you:
+
+```swift
+SearchScreen(onSelect: { item in ... })
+```
+
+When `onSelect` is `nil`, rows render as plain non-interactive cells, so existing call sites stay unchanged.
 
 ## Setup (`GITHUB_TOKEN` via `Secrets.xcconfig`)
 
-1. Create `Config/Secrets.xcconfig` locally.
-2. Add your token (or the one I provided by email).
-
-```xcconfig
-GITHUB_TOKEN = ghp_your_token_here
-```
-
-3. Set Debug/Release base configuration to `Config/Secrets.xcconfig`.
-4. `Config/Info-GithubAdditions.plist` already maps `GITHUB_TOKEN` to `$(GITHUB_TOKEN)`.
-5. At runtime, `GitHubConfig` checks Info.plist first, then falls back to the `GITHUB_TOKEN` environment variable.
+1. Copy the example file:
+   ```bash
+   cp MD-MCZ/Config/Secrets.example.xcconfig MD-MCZ/Config/Secrets.xcconfig
+   ```
+2. Add your token (or the one I provided by email):
+   ```xcconfig
+   GITHUB_TOKEN = ghp_your_token_here
+   ```
 
 ## How to Run Tests
 
@@ -50,3 +69,5 @@ xcodebuild test -project MD-MCZ.xcodeproj -scheme MD-MCZ -destination 'platform=
 
 - I kept this intentionally simple for the scope of the task. Instead of adding extra layers (like navigation scaffolding, factories, or more abstractions), I focused on making the core flow solid: search both endpoints, merge and sort results, handle fast typing well, and keep the behavior well tested.
 - For a production workflow, I would still use atomic commits on feature branches, but I would squash them before merging to `master`. For a project this small, opening multiple PRs felt unnecessary time-wise.
+- "Limit results to 50 items per request" can be read two ways — per network call or per merged list — so I applied both caps: `per_page=50` on each endpoint and 50 on the combined sorted result.
+- `.searchable` is owned by `SearchView`, so embedders accept it as part of the component as a tradeoff.
