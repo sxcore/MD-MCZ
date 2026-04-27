@@ -42,7 +42,7 @@ final class APIServiceTests: XCTestCase {
             XCTAssertEqual(request.value(forHTTPHeaderField: "X-GitHub-Api-Version"), "2022-11-28")
 
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-            return (response, Data(Self.realSearchRepositoriesPayload.utf8))
+            return (response, Data(Fixtures.searchRepositoriesPayload.utf8))
         }
 
         let result = try await apiService.searchRepositories(query: "periphery", page: 2)
@@ -59,7 +59,7 @@ final class APIServiceTests: XCTestCase {
         MockURLProtocol.requestHandler = { request in
             XCTAssertNil(request.value(forHTTPHeaderField: "Authorization"))
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-            return (response, Data(Self.realSearchRepositoriesPayload.utf8))
+            return (response, Data(Fixtures.searchRepositoriesPayload.utf8))
         }
 
         _ = try await apiService.searchRepositories(query: "swift", page: 1)
@@ -109,7 +109,7 @@ final class APIServiceTests: XCTestCase {
 
         MockURLProtocol.requestHandler = { request in
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-            return (response, Data(Self.realSearchUsersPayload.utf8))
+            return (response, Data(Fixtures.searchUsersPayloadSingleItem.utf8))
         }
 
         let result = try await apiService.searchUsers(query: "sxcore", page: 1)
@@ -125,75 +125,6 @@ final class APIServiceTests: XCTestCase {
         configuration.protocolClasses = [MockURLProtocol.self]
         return URLSession(configuration: configuration)
     }
-
-    private static let realSearchUsersPayload = #"""
-    {
-      "total_count": 1,
-      "incomplete_results": false,
-      "items": [
-        {
-          "login": "sxcore",
-          "id": 13233783,
-          "node_id": "MDQ6VXNlcjEzMjMzNzgz",
-          "avatar_url": "https://avatars.githubusercontent.com/u/13233783?v=4",
-          "gravatar_id": "",
-          "url": "https://api.github.com/users/sxcore",
-          "html_url": "https://github.com/sxcore",
-          "type": "User",
-          "site_admin": false,
-          "score": 1.0
-        }
-      ]
-    }
-    """#
-
-    private static let realSearchRepositoriesPayload = #"""
-    {
-      "total_count": 1401,
-      "incomplete_results": false,
-      "items": [
-        {
-          "id": 169972846,
-          "name": "periphery",
-          "full_name": "peripheryapp/periphery",
-          "owner": {
-            "id": 37566186,
-            "login": "peripheryapp",
-            "avatar_url": "https://avatars.githubusercontent.com/u/37566186?v=4"
-          },
-          "description": "A tool to identify unused code in Swift projects.",
-          "stargazers_count": 6088,
-          "forks_count": 228
-        },
-        {
-          "id": 226959477,
-          "name": "v2-periphery",
-          "full_name": "Uniswap/v2-periphery",
-          "owner": {
-            "id": 36115574,
-            "login": "Uniswap",
-            "avatar_url": "https://avatars.githubusercontent.com/u/36115574?v=4"
-          },
-          "description": "Peripheral smart contracts for interacting with Uniswap V2",
-          "stargazers_count": 1262,
-          "forks_count": 1766
-        },
-        {
-          "id": 340473970,
-          "name": "v3-periphery",
-          "full_name": "Uniswap/v3-periphery",
-          "owner": {
-            "id": 36115574,
-            "login": "Uniswap",
-            "avatar_url": "https://avatars.githubusercontent.com/u/36115574?v=4"
-          },
-          "description": "Peripheral smart contracts for interacting with Uniswap v3",
-          "stargazers_count": 1315,
-          "forks_count": 1235
-        }
-      ]
-    }
-    """#
 }
 
 private final class MockURLProtocol: URLProtocol {
