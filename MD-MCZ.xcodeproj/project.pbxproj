@@ -17,8 +17,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		BAC81BDD2F9A8EDF00749C05 /* MD-MCZ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "MD-MCZ.app"; path = "/Users/xmxcx/Developer/MD-MCZ/build/Debug/MD-MCZ.app"; sourceTree = "<absolute>"; };
-		BAC81BEA2F9A8EE000749C05 /* MD-MCZTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = "MD-MCZTests.xctest"; path = "/Users/xmxcx/Developer/MD-MCZ/build/Debug/MD-MCZ.app/Contents/PlugIns/MD-MCZTests.xctest"; sourceTree = "<absolute>"; };
+		BA9F31BC2F9F722200E723DC /* MD-MCZ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "MD-MCZ.app"; path = "/Users/xmxcx/Developer/MD-MCZ/build/Debug/MD-MCZ.app"; sourceTree = "<absolute>"; };
+		BA9F31BD2F9F722200E723DC /* MD-MCZTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = "MD-MCZTests.xctest"; path = "/Users/xmxcx/Developer/MD-MCZ/build/Debug/MD-MCZ.app/Contents/PlugIns/MD-MCZTests.xctest"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -82,7 +82,7 @@
 			packageProductDependencies = (
 			);
 			productName = "MD-MCZ";
-			productReference = BAC81BDD2F9A8EDF00749C05 /* MD-MCZ.app */;
+			productReference = BA9F31BC2F9F722200E723DC /* MD-MCZ.app */;
 			productType = "com.apple.product-type.application";
 		};
 		BAC81BE92F9A8EE000749C05 /* MD-MCZTests */ = {
@@ -105,7 +105,7 @@
 			packageProductDependencies = (
 			);
 			productName = "MD-MCZTests";
-			productReference = BAC81BEA2F9A8EE000749C05 /* MD-MCZTests.xctest */;
+			productReference = BA9F31BD2F9F722200E723DC /* MD-MCZTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -308,6 +308,8 @@
 		};
 		BAC81BFF2F9A8EE000749C05 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = BAC81BDF2F9A8EDF00749C05 /* MD-MCZ */;
+			baseConfigurationReferenceRelativePath = Config/Secrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -352,6 +354,8 @@
 		};
 		BAC81C002F9A8EE000749C05 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = BAC81BDF2F9A8EDF00749C05 /* MD-MCZ */;
+			baseConfigurationReferenceRelativePath = Config/Secrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
