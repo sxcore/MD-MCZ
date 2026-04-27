@@ -11,16 +11,9 @@ import Combine
 @MainActor
 final class SearchViewModel: ObservableObject {
 
-    enum State: Equatable {
-        case idle
-        case loading
-        case empty
-        case results([SearchItem])
-        case error(String)
-    }
-
-    @Published private(set) var state: State = .idle
+    @Published private(set) var state: SearchState = .idle
     @Published var searchText: String = "" { didSet { scheduleSearch() } }
+    let prompt: String = "Search GitHub users and repositories"
 
     private let service: APIServicing
     private var task: Task<Void, Never>?

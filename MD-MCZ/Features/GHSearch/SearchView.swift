@@ -15,13 +15,10 @@ struct SearchView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            content
-                .searchable(text: $viewModel.searchText, prompt: "Search GitHub users and repositories")
-                .autocorrectionDisabled(true)
-                .textInputAutocapitalization(.never)
-                .navigationTitle("Search")
-        }
+        content
+            .searchable(text: $viewModel.searchText, prompt: viewModel.prompt)
+            .autocorrectionDisabled(true)
+            .textInputAutocapitalization(.never)
     }
 
     @ViewBuilder
@@ -112,7 +109,7 @@ private struct PreviewService: APIServicing {
     }
 }
 
-#Preview("Empty / typing") {
+#Preview("Empty") {
     SearchView(service: PreviewService())
 }
 
@@ -127,9 +124,11 @@ private struct PreviewService: APIServicing {
         forksCount: 0
     )
     let user = GitHubUserDTO(id: 2, login: "sxcore", avatarUrl: nil)
-    SearchView(service: PreviewService(
-        cannedRepositories: [repo],
-        cannedUsers: [user]
-    ))
+    SearchView(
+        service: PreviewService(
+            cannedRepositories: [repo],
+            cannedUsers: [user]
+        )
+    )
 }
 #endif
