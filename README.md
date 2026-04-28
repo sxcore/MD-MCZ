@@ -7,12 +7,11 @@
 
 ## Reusing the component
 
-`SearchView` is the reusable piece. Embed it inside any `NavigationStack`, inject your own `APIServicing`, and (optionally) handle taps:
+`SearchView` is the reusable piece. Embed it inside any `NavigationStack` and (optionally) handle taps:
 
 ```swift
 NavigationStack {
     SearchView(
-        service: APIService(),
         onSelect: { item in
             // push to detail, fill a form, etc.
         }
@@ -52,7 +51,7 @@ xcodebuild test -project MD-MCZ.xcodeproj -scheme MD-MCZ -destination 'platform=
 ## Architecture
 
 - **Generic envelope:** both search endpoints share one response wrapper, so `GitHubSearchResponseDTO<Item>` keeps that decoding in one place.
-- **Merge in protocol extension:** `searchAutocomplete(query:)` lives in the `APIServicing` extension so combine/sort/cap logic is shared once.
+- **Merge in protocol extension:** `searchAutocomplete(query:)` is a shared default implementation so combine/sort/cap logic isn't duplicated per endpoint.
 - **Actor service:** `APIService` is an `actor`, which keeps async request handling safe without extra locking.
 - **Debounce + cancel:** the view model waits briefly before searching and cancels older tasks when the query changes.
 - **UI states:** `.idle`, `.loading`, `.empty`, `.results([SearchItem])`, `.error(String)`.
